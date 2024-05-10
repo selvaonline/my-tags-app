@@ -14,32 +14,38 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Tags() {
   const classes = useStyles();
+  // Initialize state with empty arrays to ensure correct types are maintained
   const [value, setValue] = useState([]);
-  const [options, setOptions] = useState([]);  // Use a separate state for the options
+  const [options, setOptions] = useState([]);
 
   // Fetch tags from the backend when the component mounts
   useEffect(() => {
-    axios.get("http://localhost:8080/api/tags")
-      .then(response => {
-        setValue(response.data);  // Ensure the data is set as initial value
-        setOptions(top100Films);  // Initialize options after ensuring the server response is valid
+    axios
+      .get("http://localhost:8080/api/tags")
+      .then((response) => {
+        // Safely access the tags and options with fallbacks
+        const tags = response.data.tags || [];
+        const availableOptions = response.data.options || top100Films;
+        setValue(tags);
+        setOptions(availableOptions);
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error fetching tags:", error);
-        setOptions(top100Films);  // Initialize options in case of error too
+        setOptions(top100Films); // Fallback to predefined options in case of an error
       });
   }, []);
 
-  // Function to handle tag changes
+  // Function to handle tag changes and update the value state
   const handleTagChange = (event, newValue) => {
-    setValue(newValue); // Update local state immediately
+    setValue(newValue);
   };
 
   // Function to save the current tags
   const saveTags = () => {
-    axios.post("http://localhost:8080/api/tags/update", value)
+    axios
+      .post("http://localhost:8080/api/tags", { tags: value })
       .then(() => console.log("Tags updated successfully"))
-      .catch(error => console.error("Error updating tags:", error));
+      .catch((error) => console.error("Error updating tags:", error));
   };
 
   return (
@@ -60,15 +66,16 @@ export default function Tags() {
           />
         )}
       />
-      <Button onClick={saveTags} color="primary" variant="contained">Save</Button>
+      <Button onClick={saveTags} color="primary" variant="contained">
+        Save
+      </Button>
     </div>
   );
 }
 
-
 // Static array of options for the autocomplete component
 const top100Films = [
-    { title: "The Shawshank Redemption", year: 1994 },
+  { title: "The Shawshank Redemption", year: 1994 },
   { title: "The Godfather", year: 1972 },
   { title: "The Godfather: Part II", year: 1974 },
   { title: "The Dark Knight", year: 2008 },
@@ -102,22 +109,5 @@ const top100Films = [
   { title: "Interstellar", year: 2014 },
   { title: "Casablanca", year: 1942 },
   { title: "City Lights", year: 1931 },
-  { title: "Psycho", year: 1960 },
-  { title: "The Green Mile", year: 1999 },
-  { title: "The Intouchables", year: 2011 },
-  { title: "Modern Times", year: 1936 },
-  { title: "Raiders of the Lost Ark", year: 1981 },
-  { title: "Rear Window", year: 1954 },
-  { title: "The Pianist", year: 2002 },
-  { title: "The Departed", year: 2006 },
-  { title: "Terminator 2: Judgment Day", year: 1991 },
-  { title: "Back to the Future", year: 1985 },
-  { title: "Whiplash", year: 2014 },
-  { title: "Gladiator", year: 2000 },
-  { title: "Memento", year: 2000 },
-  { title: "The Prestige", year: 2006 },
-  { title: "The Lion King", year: 1994 },
-  { title: "Apocalypse Now", year: 1979 },
-  { title: "Alien", year: 1979 },
-  { title: "Sunset Boulevard", year: 1950 }
+  { title: "Psycho", year: 1960}
 ];
