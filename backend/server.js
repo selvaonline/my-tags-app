@@ -3,46 +3,39 @@ const cors = require("cors");
 const bodyParser = require("body-parser");
 const fs = require("fs");
 const path = require("path");
-
 const app = express();
-const PORT = process.env.PORT || 8080;
-const dataPath = path.join(__dirname, "tags.json");
+const PORT = 8080;
+const dataFilePath = path.join(__dirname, "tags.json"); // Path to your JSON file
 
 app.use(cors());
 app.use(bodyParser.json());
 
-// API to get tags
+// Endpoint to fetch all tags
 app.get("/api/tags", (req, res) => {
-  fs.readFile(dataPath, "utf8", (err, data) => {
+  fs.readFile(dataFilePath, "utf8", (err, data) => {
     if (err) {
-      res.status(400).json({ message: "Error reading file" });
+      console.error("Failed to read tags file:", err);
+      res.status(500).send("Error reading tags data.");
       return;
     }
     res.json(JSON.parse(data));
   });
 });
 
-// API to add a tag
-app.post("/api/tags", (req, res) => {
-  const newTag = req.body;
-  fs.readFile(dataPath, "utf8", (err, data) => {
+// Endpoint to update all tags
+app.post("/api/tags/update", (req, res) => {
+  const tags = req.body; // Receive the complete state of tags from the frontend
+  fs.writeFile(dataFilePath, JSON.stringify(tags, null, 2), "utf8", (err) => {
     if (err) {
-      res.status(400).json({ message: "Error reading file" });
+      console.error("Failed to write tags file:", err);
+      res.status(500).send("Error updating tags data.");
       return;
     }
-    const tags = JSON.parse(data);
-    tags.push(newTag);
-    fs.writeFile(dataPath, JSON.stringify(tags), "utf8", (err) => {
-      if (err) {
-        res.status(400).json({ message: "Error writing file" });
-        return;
-      }
-      res.json(newTag);
-    });
+    res.send("Tags updated successfully.");
   });
 });
 
-// Start server
+// Start the server
 app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
+  console.log(`Server running on http://localhost:${PORT}`);
 });

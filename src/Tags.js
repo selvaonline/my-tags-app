@@ -15,29 +15,31 @@ const useStyles = makeStyles((theme) => ({
 export default function Tags() {
   const classes = useStyles();
   const [value, setValue] = useState([]);
+  const [options, setOptions] = useState([]);  // Use a separate state for the options
 
   // Fetch tags from the backend when the component mounts
   useEffect(() => {
-    axios
-      .get("http://localhost:8080/api/tags")
-      .then((response) => {
-        setValue(response.data);
+    axios.get("http://localhost:8080/api/tags")
+      .then(response => {
+        setValue(response.data);  // Ensure the data is set as initial value
+        setOptions(top100Films);  // Initialize options after ensuring the server response is valid
       })
-      .catch((error) => console.error("Error fetching tags:", error));
+      .catch(error => {
+        console.error("Error fetching tags:", error);
+        setOptions(top100Films);  // Initialize options in case of error too
+      });
   }, []);
 
-  // Function to add a new tag
-  const addTag = () => {
-    const newTag = { title: "The Godfather", year: 1972 }; // Example tag to add
-    // Avoid adding duplicates
-    if (!value.some((tag) => tag.title === newTag.title)) {
-      axios
-        .post("http://localhost:8080/api/tags", newTag)
-        .then((response) => {
-          setValue((prev) => [...prev, response.data]); // Update local state
-        })
-        .catch((error) => console.error("Error adding tag:", error));
-    }
+  // Function to handle tag changes
+  const handleTagChange = (event, newValue) => {
+    setValue(newValue); // Update local state immediately
+  };
+
+  // Function to save the current tags
+  const saveTags = () => {
+    axios.post("http://localhost:8080/api/tags/update", value)
+      .then(() => console.log("Tags updated successfully"))
+      .catch(error => console.error("Error updating tags:", error));
   };
 
   return (
@@ -45,12 +47,10 @@ export default function Tags() {
       <Autocomplete
         multiple
         id="tags-standard"
-        options={top100Films}
+        options={options}
         getOptionLabel={(option) => option.title}
         value={value}
-        onChange={(event, newValue) => {
-          setValue(newValue);
-        }}
+        onChange={handleTagChange}
         renderInput={(params) => (
           <TextField
             {...params}
@@ -60,14 +60,15 @@ export default function Tags() {
           />
         )}
       />
-      <Button onClick={addTag}>Add</Button>
+      <Button onClick={saveTags} color="primary" variant="contained">Save</Button>
     </div>
   );
 }
 
+
 // Static array of options for the autocomplete component
 const top100Films = [
-  { title: "The Shawshank Redemption", year: 1994 },
+    { title: "The Shawshank Redemption", year: 1994 },
   { title: "The Godfather", year: 1972 },
   { title: "The Godfather: Part II", year: 1974 },
   { title: "The Dark Knight", year: 2008 },
@@ -102,5 +103,21 @@ const top100Films = [
   { title: "Casablanca", year: 1942 },
   { title: "City Lights", year: 1931 },
   { title: "Psycho", year: 1960 },
-  // Add other films as needed
+  { title: "The Green Mile", year: 1999 },
+  { title: "The Intouchables", year: 2011 },
+  { title: "Modern Times", year: 1936 },
+  { title: "Raiders of the Lost Ark", year: 1981 },
+  { title: "Rear Window", year: 1954 },
+  { title: "The Pianist", year: 2002 },
+  { title: "The Departed", year: 2006 },
+  { title: "Terminator 2: Judgment Day", year: 1991 },
+  { title: "Back to the Future", year: 1985 },
+  { title: "Whiplash", year: 2014 },
+  { title: "Gladiator", year: 2000 },
+  { title: "Memento", year: 2000 },
+  { title: "The Prestige", year: 2006 },
+  { title: "The Lion King", year: 1994 },
+  { title: "Apocalypse Now", year: 1979 },
+  { title: "Alien", year: 1979 },
+  { title: "Sunset Boulevard", year: 1950 }
 ];
